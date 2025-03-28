@@ -16,8 +16,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     private var currentQuestionIndex: Int = .zero
     // переменная со счётчиком правильных ответов
     private var correctAnswers: Int = .zero
-    lazy var alertPresenter = AlertPresenter(self)
-    lazy var statisticService: StatisticService = StatisticServiceImplementation()
+    private lazy var alertPresenter = AlertPresenter(self)
+    private let statisticService: StatisticService = StatisticServiceImplementation()
     private let questionsAmount: Int = 10
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
