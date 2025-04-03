@@ -45,7 +45,7 @@
                                             </label>
                                         </subviews>
                                     </stackView>
-                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Kill Bill" translatesAutoresizingMaskIntoConstraints="NO" id="D6u-6K-cC7" userLabel="Preview Image">
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="D6u-6K-cC7" userLabel="Preview Image">
                                         <rect key="frame" x="0.0" y="43.666666666666686" width="374" height="561"/>
                                         <color key="backgroundColor" name="YP White"/>
                                         <constraints>
@@ -111,6 +111,9 @@
                                     </stackView>
                                 </subviews>
                             </stackView>
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="medium" translatesAutoresizingMaskIntoConstraints="NO" id="fWG-3f-ttI">
+                                <rect key="frame" x="197" y="438" width="20" height="20"/>
+                            </activityIndicatorView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" name="YP Black"/>
@@ -120,9 +123,12 @@
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="5ET-tO-ksc" secondAttribute="trailing" constant="20" id="9eF-sZ-a8o"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="5ET-tO-ksc" secondAttribute="bottom" id="A7z-Cu-L33"/>
                             <constraint firstItem="5ET-tO-ksc" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="10" id="hPh-UU-gfZ"/>
+                            <constraint firstItem="fWG-3f-ttI" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="m18-3X-rYZ"/>
+                            <constraint firstItem="fWG-3f-ttI" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="qrz-ru-TPb"/>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="activityIndicator" destination="fWG-3f-ttI" id="c22-WH-Wcb"/>
                         <outlet property="counterLabel" destination="4Rf-zo-nv3" id="wAs-eM-Aul"/>
                         <outlet property="imageView" destination="D6u-6K-cC7" id="KdM-fv-VMy"/>
                         <outlet property="noButton" destination="v08-Nf-KJd" id="g8U-TX-crW"/>
@@ -136,7 +142,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="Kill Bill" width="860" height="1449"/>
         <namedColor name="YP Black">
             <color red="0.10196078431372549" green="0.10588235294117647" blue="0.13333333333333333" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

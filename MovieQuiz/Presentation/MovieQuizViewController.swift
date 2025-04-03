@@ -4,6 +4,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     
     // MARK: - IB Outlets
     
+    @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
     @IBOutlet private weak var imageView: UIImageView!
     @IBOutlet private var textLabel: UILabel!
     @IBOutlet private var counterLabel: UILabel!
@@ -21,22 +22,23 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     private let questionsAmount: Int = 10
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
-    
+    private let generator = UIImpactFeedbackGenerator(style: .medium) // Генератор тактильной отдачи
     // MARK: - Overrides Methods
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        let questionFactory = QuestionFactory()
-        questionFactory.setDelegate(self)
-        self.questionFactory = questionFactory
-        // берём текущий вопрос из массива вопросов по индексу текущего вопроса
-        questionFactory.requestNextQuestion()
+        
+        imageView.layer.cornerRadius = 20
+        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
+        showLoadingIndicator()
+        questionFactory?.loadData()
     }
     
     // MARK: - IB Actions
     
     // метод вызывается, когда пользователь нажимает на кнопку "Да"
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
+        self.generator.impactOccurred() // Вибрация
         guard let currentQuestion = currentQuestion else { return }
         let givenAnswer = true
         showAnswerResult(isCorrect: currentQuestion.correctAnswer == givenAnswer)
@@ -44,6 +46,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     
     // метод вызывается, когда пользователь нажимает на кнопку "Нет"
     @IBAction private func noButtonClicked(_ sender: UIButton) {
+        self.generator.impactOccurred() // Вибрация
         guard let currentQuestion = currentQuestion else { return }
         let givenAnswer = false
         showAnswerResult(isCorrect: currentQuestion.correctAnswer == givenAnswer)
@@ -63,6 +66,15 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         }
     }
     
+    func didLoadDataFromServer() {
+        hideLoadingIndicator() // скрываем индикатор загрузки
+        questionFactory?.requestNextQuestion()
+    }
+    
+    func didFailToLoadData(with error: Error) {
+        showNetworkError(message: error.localizedDescription)
+    }
+    
     // MARK: - AlertPresentorDelegate
     
     func didAlertButtonTouch(alert: UIAlertController?) {
@@ -70,15 +82,33 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         self.correctAnswers = 0 //  обнуляем счётчик правильных ответов
         self.imageView.layer.borderColor = UIColor.clear.cgColor // делаем границу прозрачной
         guard let questionFactory = self.questionFactory else { return }
-        questionFactory.requestNextQuestion()
+        showLoadingIndicator()
+        questionFactory.loadData()
     }
     
     // MARK: - Private Methods
+
+    private func showLoadingIndicator() {
+        activityIndicator.isHidden = false // говорим, что индикатор загрузки не скрыт
+        activityIndicator.startAnimating() // включаем анимацию
+    }
+    
+    private func hideLoadingIndicator() {
+        activityIndicator.isHidden = true
+    }
+    
+    private func showNetworkError(message: String) {
+        hideLoadingIndicator() // скрываем индикатор загрузки
+        let model = AlertModel(title: "Ошибка",
+                               message: message,
+                               buttonText: "Попробовать еще раз", completion: {})
+        alertPresenter.requestAlertPresenter(model: model)
+    }
     
     // приватный метод конвертации, который принимает моковый вопрос и возвращает вью модель для главного экрана
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(
-            image: UIImage(named: model.image) ?? UIImage(),
+            image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
         return questionStep
