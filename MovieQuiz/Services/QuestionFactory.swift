@@ -56,10 +56,7 @@ class QuestionFactory: QuestionFactoryProtocol {
     private let moviesLoader: MoviesLoading
     private weak var delegate: QuestionFactoryDelegate?
     private var movies: [MostPopularMovie] = []
-    
-//    func setDelegate(_ delegate: QuestionFactoryDelegate) {
-//        self.delegate = delegate
-//    }
+
     init(moviesLoader: MoviesLoading, delegate: QuestionFactoryDelegate?) {
             self.moviesLoader = moviesLoader
             self.delegate = delegate
@@ -68,7 +65,7 @@ class QuestionFactory: QuestionFactoryProtocol {
     func loadData() {
         moviesLoader.loadMovies { [weak self] result in
             DispatchQueue.main.async {
-                guard let self = self else { return }
+                guard let self else { return }
                 switch result {
                 case .success(let mostPopularMovies):
                     self.movies = mostPopularMovies.items
@@ -106,7 +103,7 @@ class QuestionFactory: QuestionFactoryProtocol {
             
             let rating = Float(movie.rating) ?? 0
             // Генерируем случайное число для сравнения от 4 до 9
-            let compareValue = Float(Int.random(in: 4...9))
+            let compareValue = Float(Int.random(in: 6...9))
             
             // Генерируем случайное условие (больше/меньше)
             let isGreater = Bool.random()
@@ -115,14 +112,14 @@ class QuestionFactory: QuestionFactoryProtocol {
             let text = "Рейтинг этого фильма \(isGreater ? "больше" : "меньше"), чем \(Int(compareValue))?"
             
             // Определяем правильный ответ
-            let correctAnswer = isGreater ? (rating > compareValue) : (rating < compareValue)
+            let correctAnswer = isGreater ? (rating > compareValue) : (rating <= compareValue)
             
             let question = QuizQuestion(image: imageData,
                                         text: text,
                                         correctAnswer: correctAnswer)
             
             DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
+                guard let self else { return }
                 self.delegate?.didReceiveNextQuestion(question: question)
             }
         }

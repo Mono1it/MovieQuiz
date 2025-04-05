@@ -22,11 +22,11 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     private let questionsAmount: Int = 10
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
-    private let generator = UIImpactFeedbackGenerator(style: .medium) // Генератор тактильной отдачи
+    private let generator = UIImpactFeedbackGenerator(style: .heavy) // Генератор тактильной отдачи
     // MARK: - Overrides Methods
     
     override func viewDidLoad() {
-        super.viewDidLoad()
+        super.viewDidLoad()v
         
         imageView.layer.cornerRadius = 20
         questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
@@ -89,12 +89,11 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     // MARK: - Private Methods
 
     private func showLoadingIndicator() {
-        activityIndicator.isHidden = false // говорим, что индикатор загрузки не скрыт
         activityIndicator.startAnimating() // включаем анимацию
     }
     
     private func hideLoadingIndicator() {
-        activityIndicator.isHidden = true
+        activityIndicator.stopAnimating()
     }
     
     private func showNetworkError(message: String) {
@@ -136,7 +135,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         }
         // запускаем задачу через 1 секунду c помощью диспетчера задач
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            guard let self = self else { return }
+            guard let self else { return }
             self.showNextQuestionOrResults()
         }
     }
