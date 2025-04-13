@@ -102,7 +102,7 @@ class QuestionFactory: QuestionFactoryProtocol {
             }
             
             let rating = Float(movie.rating) ?? 0
-            // Генерируем случайное число для сравнения от 4 до 9
+            // Генерируем случайное число для сравнения от 6 до 9
             let compareValue = Float(Int.random(in: 6...9))
             
             // Генерируем случайное условие (больше/меньше)
