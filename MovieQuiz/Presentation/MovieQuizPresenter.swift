@@ -10,22 +10,23 @@ import Foundation
 final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     // MARK: - Properties
-    private var currentQuestionIndex: Int = .zero
-    let questionsAmount: Int = 10
-    var currentQuestion: QuizQuestion?
-    weak var viewController: MovieQuizViewController?
-    var questionFactory: QuestionFactoryProtocol?
-    //private let statisticService: StatisticService = StatisticServiceImplementation()
-    private let generator = UIImpactFeedbackGenerator(style: .heavy) // Генератор тактильной отдачи
-    var correctAnswers: Int = 0
+    private weak var viewController: MovieQuizViewControllerProtocol?
+    private var questionFactory: QuestionFactoryProtocol?
+    private let statisticService: StatisticServiceImplementation!
     
-    init(viewController: MovieQuizViewController) {
-            self.viewController = viewController
-            
-            questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
-            questionFactory?.loadData()
-            viewController.showLoadingIndicator()
-        }
+    private var correctAnswers: Int = .zero
+    private var currentQuestionIndex: Int = .zero
+    private let questionsAmount: Int = 10
+    private var currentQuestion: QuizQuestion?
+    
+    // MARK: - Initializer
+    init(viewController: MovieQuizViewControllerProtocol) {
+        self.viewController = viewController
+        statisticService = StatisticServiceImplementation()
+        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
+        questionFactory?.loadData()
+        viewController.showLoadingIndicator()
+    }
     
     // MARK: - IB Actions
     
@@ -53,48 +54,63 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         }
     }
     
-        func didLoadDataFromServer() {
-            viewController?.hideLoadingIndicator() // скрываем индикатор загрузки
-            questionFactory?.requestNextQuestion()
-        }
+    func didLoadDataFromServer() {
+        viewController?.hideLoadingIndicator() // скрываем индикатор загрузки
+        questionFactory?.requestNextQuestion()
+    }
     
-        func didFailToLoadData(with error: Error) {
-            viewController?.showNetworkError(message: error.localizedDescription)
-        }
-        
+    func didFailToLoadData(with error: Error) {
+        viewController?.showNetworkError(message: error.localizedDescription)
+    }
+    
     // MARK: - Private Methods
     private func didAnswer(isYes: Bool) {
-        self.generator.impactOccurred() // Вибрация
+        viewController?.impact() // Вибрация
         guard let currentQuestion = currentQuestion else { return }
         let givenAnswer = isYes
-        viewController?.showAnswerResult(isCorrect: currentQuestion.correctAnswer == givenAnswer)
-        }
+        proceedWithAnswer(isCorrect: currentQuestion.correctAnswer == givenAnswer)
+    }
     
     // MARK: - Iternal Methods
     
+    // метод, который меняет цвет рамки
+    func proceedWithAnswer(isCorrect: Bool) {
+        viewController?.disableButtons()
+        if isCorrect {
+            viewController?.highlightImageBorder(isCorrectAnswer: isCorrect) // делаем рамку зелёной
+            correctAnswers += 1
+        } else {
+            viewController?.highlightImageBorder(isCorrectAnswer: isCorrect) // делаем рамку красной
+        }
+        // запускаем задачу через 1 секунду c помощью диспетчера задач
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self else { return }
+            self.proceedToNextQuestionOrResults()
+        }
+    }
+    
     // логика перехода в один из сценариев
-    func showNextQuestionOrResults() {
+    private func proceedToNextQuestionOrResults() {
         guard let viewController = viewController else { return }
         if self.isLastQuestion() {
-            viewController.statisticService.store(correct: correctAnswers, total: self.questionsAmount)
+            statisticService.store(correct: correctAnswers, total: self.questionsAmount)
             // идём в состояние "Результат квиза"
             let result = QuizResultsViewModel(title: "Этот раунд окончен!", text: """
                                               Ваш результат: \(correctAnswers)/\(self.questionsAmount)
-                                              Количество сыграный квизов: \(viewController.statisticService.gamesCount)
-                                              Рекорд: \(viewController.statisticService.bestGame.correct)/\(viewController.statisticService.bestGame.total) (\(viewController.statisticService.bestGame.date.dateTimeString))
-                                              Средняя точность: \(String(format: "%.2f", viewController.statisticService.totalAccuracy))%
+                                              Количество сыграный квизов: \(statisticService.gamesCount)
+                                              Рекорд: \(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(statisticService.bestGame.date.dateTimeString))
+                                              Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%
                                               """, buttonText: "Сыграть ещё раз")
             viewController.showResults(quiz: result)
         } else {
             self.switchToNextQuestion()
             // идём в состояние "Вопрос показан"
-            viewController.imageView.layer.borderColor = UIColor.clear.cgColor
+            viewController.resetBorder()
             questionFactory?.requestNextQuestion()
         }
-        viewController.yesButton.isEnabled = true
-        viewController.noButton.isEnabled = true
+        viewController.enableButtons()
     }
-
+    
     func isLastQuestion() -> Bool {
         currentQuestionIndex == questionsAmount - 1
     }
@@ -102,7 +118,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     func restartGame() {
         currentQuestionIndex = 0
         correctAnswers = 0 //  обнуляем счётчик правильных ответов
-        viewController?.imageView.layer.borderColor = UIColor.clear.cgColor // делаем границу прозрачной
+        viewController?.resetBorder() // делаем границу прозрачной
         guard let questionFactory = self.questionFactory else { return }
         viewController?.showLoadingIndicator()
         questionFactory.loadData()

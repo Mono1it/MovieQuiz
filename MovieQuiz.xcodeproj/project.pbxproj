@@ -26,6 +26,8 @@
 		095385112DA6B4030082976D /* MoviesLoaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095385102DA6B4030082976D /* MoviesLoaderTests.swift */; };
 		095385252DA9338F0082976D /* MovieQuizUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095385222DA9338F0082976D /* MovieQuizUITests.swift */; };
 		095385292DABCB0A0082976D /* MovieQuizPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095385282DABCB0A0082976D /* MovieQuizPresenter.swift */; };
+		0953852D2DAC02910082976D /* PresenterTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0953852C2DAC02910082976D /* PresenterTest.swift */; };
+		0953852F2DAC031C0082976D /* MovieQuizViewControllerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0953852E2DAC031C0082976D /* MovieQuizViewControllerProtocol.swift */; };
 		09AE4CDD2D9E9DC200FE9323 /* NetworkClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09AE4CDC2D9E9DC200FE9323 /* NetworkClient.swift */; };
 		09AE4CDF2D9EA05900FE9323 /* MostPopularMovies.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09AE4CDE2D9EA05900FE9323 /* MostPopularMovies.swift */; };
 		09AE4CE12D9EA0DA00FE9323 /* MoviesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09AE4CE02D9EA0DA00FE9323 /* MoviesLoader.swift */; };
@@ -78,6 +80,8 @@
 		095385162DA92F4E0082976D /* MovieQuizUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MovieQuizUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		095385222DA9338F0082976D /* MovieQuizUITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MovieQuizUITests.swift; sourceTree = "<group>"; };
 		095385282DABCB0A0082976D /* MovieQuizPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieQuizPresenter.swift; sourceTree = "<group>"; };
+		0953852C2DAC02910082976D /* PresenterTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenterTest.swift; sourceTree = "<group>"; };
+		0953852E2DAC031C0082976D /* MovieQuizViewControllerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieQuizViewControllerProtocol.swift; sourceTree = "<group>"; };
 		09AE4CDC2D9E9DC200FE9323 /* NetworkClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkClient.swift; sourceTree = "<group>"; };
 		09AE4CDE2D9EA05900FE9323 /* MostPopularMovies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MostPopularMovies.swift; sourceTree = "<group>"; };
 		09AE4CE02D9EA0DA00FE9323 /* MoviesLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoviesLoader.swift; sourceTree = "<group>"; };
@@ -133,6 +137,7 @@
 			children = (
 				0953850E2DA6AFCF0082976D /* ArrayTests.swift */,
 				095385102DA6B4030082976D /* MoviesLoaderTests.swift */,
+				0953852C2DAC02910082976D /* PresenterTest.swift */,
 			);
 			path = MovieQuizTests;
 			sourceTree = "<group>";
@@ -162,6 +167,7 @@
 				094344E52D932854003DCBBA /* StatisticServiceImplementation.swift */,
 				09AE4CDC2D9E9DC200FE9323 /* NetworkClient.swift */,
 				09AE4CE02D9EA0DA00FE9323 /* MoviesLoader.swift */,
+				0953852E2DAC031C0082976D /* MovieQuizViewControllerProtocol.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -377,6 +383,7 @@
 			files = (
 				0953850F2DA6AFD00082976D /* ArrayTests.swift in Sources */,
 				095385112DA6B4030082976D /* MoviesLoaderTests.swift in Sources */,
+				0953852D2DAC02910082976D /* PresenterTest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -386,6 +393,7 @@
 			files = (
 				AD5EE5DE284D7887003966EF /* UIColor+Extensions.swift in Sources */,
 				092827512D8AED4F00084225 /* AlertPresenter.swift in Sources */,
+				0953852F2DAC031C0082976D /* MovieQuizViewControllerProtocol.swift in Sources */,
 				092827562D8AF0A800084225 /* AlertPresenterDelegate.swift in Sources */,
 				0928274F2D8AED2F00084225 /* AlertModel.swift in Sources */,
 				094344E02D915A65003DCBBA /* StatisticService.swift in Sources */,

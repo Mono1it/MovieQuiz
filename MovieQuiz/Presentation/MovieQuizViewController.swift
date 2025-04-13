@@ -1,31 +1,29 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController, AlertPresenterDelegate {
+final class MovieQuizViewController: UIViewController, AlertPresenterDelegate, MovieQuizViewControllerProtocol {
     
     // MARK: - IB Outlets
     
-    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
-    @IBOutlet weak var imageView: UIImageView!
+    @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
+    @IBOutlet private weak var imageView: UIImageView!
     @IBOutlet private var textLabel: UILabel!
     @IBOutlet private var counterLabel: UILabel!
-    @IBOutlet var yesButton: UIButton!
-    @IBOutlet var noButton: UIButton!
+    @IBOutlet private var yesButton: UIButton!
+    @IBOutlet private var noButton: UIButton!
+    private let generator = UIImpactFeedbackGenerator(style: .heavy)
     
     // MARK: - Private Properties
     
     private lazy var alertPresenter = AlertPresenter(self)
-    let statisticService: StatisticService = StatisticServiceImplementation()
     private var presenter: MovieQuizPresenter!
+    
     // MARK: - Overrides Methods
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        presenter = MovieQuizPresenter(viewController: self)
         
-        presenter.viewController = self
+        presenter = MovieQuizPresenter(viewController: self)
         imageView.layer.cornerRadius = 20
-        showLoadingIndicator()
-        presenter.questionFactory?.requestNextQuestion()
     }
     
     // MARK: - IB Actions
@@ -71,27 +69,29 @@ final class MovieQuizViewController: UIViewController, AlertPresenterDelegate {
         counterLabel.text = step.questionNumber
     }
     
-    // метод, который меняет цвет рамки
-    func showAnswerResult(isCorrect: Bool) {
-        // метод красит рамку
-        yesButton.isEnabled = false
-        noButton.isEnabled = false
-        imageView.layer.masksToBounds = true // даём разрешение на рисование рамки
-        imageView.layer.borderWidth = 8 // толщина рамки
-        if isCorrect {
-            imageView.layer.borderColor = UIColor.ypGreen.cgColor // делаем рамку зелёной
-            presenter.correctAnswers += 1
-        } else {
-            imageView.layer.borderColor = UIColor.ypRed.cgColor // делаем рамку красной
-        }
-        // запускаем задачу через 1 секунду c помощью диспетчера задач
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            guard let self else { return }
-            //self.presenter.questionFactory = self.questionFactory
-            self.presenter.showNextQuestionOrResults()
-        }
+    func highlightImageBorder(isCorrectAnswer: Bool) {
+        imageView.layer.masksToBounds = true
+        imageView.layer.borderWidth = 8
+        imageView.layer.borderColor = isCorrectAnswer ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
     }
     
+    func disableButtons() {
+        yesButton.isEnabled = false
+        noButton.isEnabled = false
+    }
+    
+    func enableButtons() {
+        yesButton.isEnabled = true
+        noButton.isEnabled = true
+    }
+
+    func resetBorder() {
+        imageView.layer.borderColor = UIColor.clear.cgColor
+    }
+    
+    func impact() {
+        self.generator.impactOccurred()
+    }
     // метод для показа результатов раунда квиза
     func showResults(quiz result: QuizResultsViewModel) {
         //  создаём модель для AlertPresenter
