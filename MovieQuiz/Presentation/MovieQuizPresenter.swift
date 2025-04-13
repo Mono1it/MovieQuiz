@@ -8,32 +8,76 @@ import UIKit
 import Foundation
 
 final class MovieQuizPresenter {
+    
     // MARK: - Properties
     private var currentQuestionIndex: Int = .zero
     let questionsAmount: Int = 10
     var currentQuestion: QuizQuestion?
     weak var viewController: MovieQuizViewController?
+    var questionFactory: QuestionFactoryProtocol?
+    //private let statisticService: StatisticService = StatisticServiceImplementation()
     private let generator = UIImpactFeedbackGenerator(style: .heavy) // Генератор тактильной отдачи
+    var correctAnswers: Int = 0
     
     // MARK: - IB Actions
     
     // метод вызывается, когда пользователь нажимает на кнопку "Да"
     func yesButtonClicked() {
-        self.generator.impactOccurred() // Вибрация
-        guard let currentQuestion = currentQuestion else { return }
-        let givenAnswer = true
-        viewController?.showAnswerResult(isCorrect: currentQuestion.correctAnswer == givenAnswer)
+        didAnswer(isYes: true)
     }
     
     // метод вызывается, когда пользователь нажимает на кнопку "Нет"
     func noButtonClicked() {
-        self.generator.impactOccurred() // Вибрация
-        guard let currentQuestion = currentQuestion else { return }
-        let givenAnswer = false
-        viewController?.showAnswerResult(isCorrect: currentQuestion.correctAnswer == givenAnswer)
+        didAnswer(isYes: false)
     }
     
-    // MARK: - Methods
+    // MARK: - QuestionFactoryDelegate
+    
+    func didReceiveNextQuestion(question: QuizQuestion?) {
+        guard let question = question else { return }
+        // проверка, что вопрос не nil
+        currentQuestion = question
+        // конвертируем вопрос во вью модель
+        let quizStepViewModel = convert(model: question)
+        // показываем вопрос на экране
+        DispatchQueue.main.async { [weak self] in
+            self?.viewController?.show(quiz: quizStepViewModel)
+        }
+    }
+    
+    // MARK: - Private Methods
+    private func didAnswer(isYes: Bool) {
+        self.generator.impactOccurred() // Вибрация
+        guard let currentQuestion = currentQuestion else { return }
+        let givenAnswer = isYes
+        viewController?.showAnswerResult(isCorrect: currentQuestion.correctAnswer == givenAnswer)
+        }
+    
+    // MARK: - Iternal Methods
+    
+    // логика перехода в один из сценариев
+    func showNextQuestionOrResults() {
+        guard let viewController = viewController else { return }
+        if self.isLastQuestion() {
+            viewController.statisticService.store(correct: correctAnswers, total: self.questionsAmount)
+            // идём в состояние "Результат квиза"
+            let result = QuizResultsViewModel(title: "Этот раунд окончен!", text: """
+                                              Ваш результат: \(correctAnswers)/\(self.questionsAmount)
+                                              Количество сыграный квизов: \(viewController.statisticService.gamesCount)
+                                              Рекорд: \(viewController.statisticService.bestGame.correct)/\(viewController.statisticService.bestGame.total) (\(viewController.statisticService.bestGame.date.dateTimeString))
+                                              Средняя точность: \(String(format: "%.2f", viewController.statisticService.totalAccuracy))%
+                                              """, buttonText: "Сыграть ещё раз")
+            viewController.showResults(quiz: result)
+        } else {
+            self.switchToNextQuestion()
+            // идём в состояние "Вопрос показан"
+            viewController.imageView.layer.borderColor = UIColor.clear.cgColor
+            viewController.questionFactory?.requestNextQuestion()
+        }
+        viewController.yesButton.isEnabled = true
+        viewController.noButton.isEnabled = true
+    }
+
     func isLastQuestion() -> Bool {
         currentQuestionIndex == questionsAmount - 1
     }
