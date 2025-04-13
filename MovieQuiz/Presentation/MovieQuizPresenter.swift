@@ -7,7 +7,7 @@
 import UIKit
 import Foundation
 
-final class MovieQuizPresenter {
+final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     // MARK: - Properties
     private var currentQuestionIndex: Int = .zero
@@ -18,6 +18,14 @@ final class MovieQuizPresenter {
     //private let statisticService: StatisticService = StatisticServiceImplementation()
     private let generator = UIImpactFeedbackGenerator(style: .heavy) // Генератор тактильной отдачи
     var correctAnswers: Int = 0
+    
+    init(viewController: MovieQuizViewController) {
+            self.viewController = viewController
+            
+            questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
+            questionFactory?.loadData()
+            viewController.showLoadingIndicator()
+        }
     
     // MARK: - IB Actions
     
@@ -45,6 +53,15 @@ final class MovieQuizPresenter {
         }
     }
     
+        func didLoadDataFromServer() {
+            viewController?.hideLoadingIndicator() // скрываем индикатор загрузки
+            questionFactory?.requestNextQuestion()
+        }
+    
+        func didFailToLoadData(with error: Error) {
+            viewController?.showNetworkError(message: error.localizedDescription)
+        }
+        
     // MARK: - Private Methods
     private func didAnswer(isYes: Bool) {
         self.generator.impactOccurred() // Вибрация
@@ -72,7 +89,7 @@ final class MovieQuizPresenter {
             self.switchToNextQuestion()
             // идём в состояние "Вопрос показан"
             viewController.imageView.layer.borderColor = UIColor.clear.cgColor
-            viewController.questionFactory?.requestNextQuestion()
+            questionFactory?.requestNextQuestion()
         }
         viewController.yesButton.isEnabled = true
         viewController.noButton.isEnabled = true
@@ -82,8 +99,13 @@ final class MovieQuizPresenter {
         currentQuestionIndex == questionsAmount - 1
     }
     
-    func resetQuestionIndex() {
+    func restartGame() {
         currentQuestionIndex = 0
+        correctAnswers = 0 //  обнуляем счётчик правильных ответов
+        viewController?.imageView.layer.borderColor = UIColor.clear.cgColor // делаем границу прозрачной
+        guard let questionFactory = self.questionFactory else { return }
+        viewController?.showLoadingIndicator()
+        questionFactory.loadData()
     }
     
     func switchToNextQuestion() {
