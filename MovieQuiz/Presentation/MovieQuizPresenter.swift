@@ -12,23 +12,22 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     // MARK: - Properties
     private weak var viewController: MovieQuizViewControllerProtocol?
     private var questionFactory: QuestionFactoryProtocol?
-    private let statisticService: StatisticServiceImplementation!
+    private let statisticService = StatisticServiceImplementation()
     
     private var correctAnswers: Int = .zero
     private var currentQuestionIndex: Int = .zero
     private let questionsAmount: Int = 10
     private var currentQuestion: QuizQuestion?
     
-    // MARK: - Initializer
+    // MARK: - Initialization
     init(viewController: MovieQuizViewControllerProtocol) {
         self.viewController = viewController
-        statisticService = StatisticServiceImplementation()
         questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         questionFactory?.loadData()
         viewController.showLoadingIndicator()
     }
     
-    // MARK: - IB Actions
+    // MARK: - Public Methods
     
     // метод вызывается, когда пользователь нажимает на кнопку "Да"
     func yesButtonClicked() {
@@ -38,6 +37,15 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     // метод вызывается, когда пользователь нажимает на кнопку "Нет"
     func noButtonClicked() {
         didAnswer(isYes: false)
+    }
+    
+    func restartGame() {
+        currentQuestionIndex = 0
+        correctAnswers = 0 //  обнуляем счётчик правильных ответов
+        viewController?.resetBorder() // делаем границу прозрачной
+        guard let questionFactory = self.questionFactory else { return }
+        viewController?.showLoadingIndicator()
+        questionFactory.loadData()
     }
     
     // MARK: - QuestionFactoryDelegate
@@ -64,6 +72,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     }
     
     // MARK: - Private Methods
+    
     private func didAnswer(isYes: Bool) {
         viewController?.impact() // Вибрация
         guard let currentQuestion = currentQuestion else { return }
@@ -71,7 +80,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         proceedWithAnswer(isCorrect: currentQuestion.correctAnswer == givenAnswer)
     }
     
-    // MARK: - Iternal Methods
+    // MARK: - Internal Logic
     
     // метод, который меняет цвет рамки
     func proceedWithAnswer(isCorrect: Bool) {
@@ -103,7 +112,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
                                               """, buttonText: "Сыграть ещё раз")
             viewController.showResults(quiz: result)
         } else {
-            self.switchToNextQuestion()
+            self.incrementQuestionIndex()
             // идём в состояние "Вопрос показан"
             viewController.resetBorder()
             questionFactory?.requestNextQuestion()
@@ -115,25 +124,19 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         currentQuestionIndex == questionsAmount - 1
     }
     
-    func restartGame() {
-        currentQuestionIndex = 0
-        correctAnswers = 0 //  обнуляем счётчик правильных ответов
-        viewController?.resetBorder() // делаем границу прозрачной
-        guard let questionFactory = self.questionFactory else { return }
-        viewController?.showLoadingIndicator()
-        questionFactory.loadData()
-    }
+    func convert(model: QuizQuestion) -> QuizStepViewModel {
+         let questionStep = QuizStepViewModel(
+             image: UIImage(data: model.image) ?? UIImage(),
+             question: model.text,
+             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
+         return questionStep
+     }
+     
+    // MARK: - Private Helpers
     
-    func switchToNextQuestion() {
+    private func incrementQuestionIndex() {
         currentQuestionIndex += 1
     }
     
-    func convert(model: QuizQuestion) -> QuizStepViewModel {
-        let questionStep = QuizStepViewModel(
-            image: UIImage(data: model.image) ?? UIImage(),
-            question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
-        return questionStep
-    }
-    
+   
 }
